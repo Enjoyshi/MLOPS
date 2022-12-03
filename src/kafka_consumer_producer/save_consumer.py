@@ -1,6 +1,7 @@
 from kafka import KafkaConsumer
 import json
 import mysql.connector
+from utils import Consumer
 
 # data col : age,sex,cp,trtbps,chol,fbs,restecg,thalachh,exng,oldpeak,slp,caa,thall
 # data : 57,1,0,150,276,0,0,112,1,0.6,1,1,1
@@ -28,8 +29,10 @@ def insert_data(mycursor, data):
 
 
 if __name__ == "__main__":
-    consumer = KafkaConsumer(bootstrap_servers='0.0.0.0:29092', value_deserializer=lambda v: json.loads(v))
-    consumer.subscribe(['Save'])
+    server = '0.0.0.0:29092'
+    topic = 'Save'
+
+    consumer = Consumer(server, topic).consumer
     mydb, mycursor = init_db()
     create_table(mycursor)
     for msg in consumer:

@@ -4,6 +4,7 @@ import json
 import numpy as np
 import pandas as pd
 from kafka.structs import TopicPartition
+from utils import Consumer, Producer
 
 # data col : age,sex,cp,trtbps,chol,fbs,restecg,thalachh,exng,oldpeak,slp,caa,thall
 
@@ -23,10 +24,10 @@ if __name__ == "__main__":
     server = '0.0.0.0:29092'
     topic = 'ML'
     partition = 0
-    consumer = KafkaConsumer(bootstrap_servers=server, value_deserializer=lambda v: json.loads(v))
-    consumer.assign([TopicPartition(topic, partition)])
-    producer_save = KafkaProducer(bootstrap_servers=server, value_serializer=lambda v: json.dumps(v).encode('utf-8'))
-    producer_alert = KafkaProducer(bootstrap_servers=server, value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+
+    consumer = Consumer(server, topic, if_partition=True, partition = partition).consumer
+    producer_save = Producer(server, 'Save').producer
+    producer_alert = Producer(server, 'Alert').producer
 
     for msg in consumer:
         value = msg.value
