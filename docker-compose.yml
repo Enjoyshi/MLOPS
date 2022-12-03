@@ -2,26 +2,57 @@ version : '3.8'
 
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:7.3.0
+    container_name: zookeeper
+    networks:
+      - zoo_network
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+
+  brokerkafka:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: brokerkafka
     ports:
-      - 22181:2181
-  
-  kafka:
-    image: confluentinc/cp-kafka:latest
+      - "9092:9092"
     depends_on:
       - zookeeper
-    ports:
-      - 29092:29092
+    networks:
+      - kafka_network
+      - zoo_network
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://brokerkafka:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+  
+  kafka-consumers:
+    build: 
+      context: .
+      dockerfile: src/kafka_consumer_producer/Dockerfile
+    container_name: kafka-consumers
+    depends_on:
+      - brokerkafka
+    environment:
+      - SERVERS_K=brokerkafka:29092
+    networks:
+      - kafka_network
+  
+  save-consumers:
+    build: 
+      context: .
+      dockerfile: src/save_consumer/Dockerfile
+    container_name: save-consumers
+    depends_on:
+      - brokerkafka
+    environment:
+      - SERVERS_K=brokerkafka:29092
+    networks:
+      - kafka_network
+      - db_network
 
   kafka-mysql:
     image: mysql:latest
@@ -34,7 +65,7 @@ services:
       - kafka-python-app-volume:/var/lib/mysql
       - kafka-python-app-volume-config:/etc/mysql
     networks:
-      - kafka-python-app-network
+      - db_network
   
   data_drift_backend:
     build: 
@@ -42,16 +73,21 @@ services:
       dockerfile: src/data_drift_backend/Dockerfile
     container_name: data_drift_backend
     depends_on:
-      - kafka
+      - brokerkafka
       - kafka-mysql
     ports:
       - 80:80
     networks:
-      - kafka-python-app-network
+      - db_network
 
 networks:
-  kafka-python-app-network:
-    name: kafka-python-app-network
+  kafka_network:
+    driver: bridge
+  zoo_network:
+    driver: bridge
+  db_network:
+    driver: bridge
 volumes:
   kafka-python-app-volume:
   kafka-python-app-volume-config:
+

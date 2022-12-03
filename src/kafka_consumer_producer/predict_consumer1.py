@@ -1,10 +1,8 @@
-from kafka import KafkaConsumer, KafkaProducer
 import joblib
-import json
 import numpy as np
 import pandas as pd
-from kafka.structs import TopicPartition
 from utils import Consumer, Producer
+import os
 
 # data col : age,sex,cp,trtbps,chol,fbs,restecg,thalachh,exng,oldpeak,slp,caa,thall
 
@@ -21,11 +19,12 @@ def predict(data):
     return pred
 
 if __name__ == "__main__":
-    server = '0.0.0.0:29092'
+    #server = '0.0.0.0:29092'
+    server = os.environ['SERVERS_K']
     topic = 'ML'
     partition = 0
 
-    consumer = Consumer(server, topic, if_partition=True, partition = partition).consumer
+    consumer = Consumer(server, topic).consumer
     producer_save = Producer(server, 'Save').producer
     producer_alert = Producer(server, 'Alert').producer
 
