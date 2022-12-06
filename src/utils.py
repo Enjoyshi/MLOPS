@@ -24,7 +24,7 @@ class Consumer:
             except:
                 repeat -= 1
                 print("Connection failed on consumer, retrying...")
-                #time.sleep(2)
+                time.sleep(2)
 
         if not is_connected:
             raise Exception("Connection failed on consumer, aborting...")
