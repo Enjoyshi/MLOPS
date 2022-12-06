@@ -94,6 +94,20 @@ services:
       - API_URL=http://data_drift_backend:80
     networks:
       - drift_network
+
+  alert_frontend:
+    build: 
+      context: .
+      dockerfile: src/alert_frontend/Dockerfile
+    container_name: alert_frontend
+    depends_on:
+      - brokerkafka
+    ports:
+      - 8502:8502
+    environment:
+      - SERVERS_K=brokerkafka:29092
+    networks:
+      - kafka_network
     
 networks:
   kafka_network:
@@ -103,6 +117,8 @@ networks:
   db_network:
     driver: bridge
   drift_network:
+    driver: bridge
+  alert_networks:
     driver: bridge
 volumes:
   kafka-python-app-volume:
