@@ -130,3 +130,6 @@ dmypy.json
 
 # Macos files
 .DS_Store
+
+# joblib file
+*.joblib
