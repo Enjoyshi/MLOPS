@@ -38,7 +38,7 @@ def train_model():
     pipe.fit(x, y)
 
     # Save model
-    joblib.dump(pipe, "train/svm_model.joblib")
+    joblib.dump(pipe, "src/svm_model.joblib")
 
 
 

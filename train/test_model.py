@@ -3,7 +3,7 @@ import pandas as pd
 
 def test_model():
     # Load model
-    pipe = joblib.load("train/svm_model.joblib")
+    pipe = joblib.load("src/svm_model.joblib")
 
     # Load data
     df = pd.read_csv("data/test.csv")
