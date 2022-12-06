@@ -35,4 +35,9 @@ python train/train_model.py
 docker compose up
 ```
 
+### C.3) Frontend
+```
+http://localhost:8501
+```
+
 
