@@ -40,19 +40,6 @@ services:
       - SERVERS_K=brokerkafka:29092
     networks:
       - kafka_network
-  
-  save-consumers:
-    build: 
-      context: .
-      dockerfile: src/save_consumer/Dockerfile
-    container_name: save-consumers
-    depends_on:
-      - brokerkafka
-    environment:
-      - SERVERS_K=brokerkafka:29092
-    networks:
-      - kafka_network
-      - db_network
 
   kafka-mysql:
     image: mysql:latest
@@ -66,6 +53,20 @@ services:
       - kafka-python-app-volume-config:/etc/mysql
     networks:
       - db_network
+
+  save-consumers:
+    build: 
+      context: .
+      dockerfile: src/save_consumer/Dockerfile
+    container_name: save-consumers
+    depends_on:
+      - brokerkafka
+      - kafka-mysql
+    environment:
+      - SERVERS_K=brokerkafka:29092
+    networks:
+      - kafka_network
+      - db_network
   
   data_drift_backend:
     build: 
@@ -73,27 +74,27 @@ services:
       dockerfile: src/data_drift_backend/Dockerfile
     container_name: data_drift_backend
     depends_on:
-      - brokerkafka
-      - kafka-mysql
+     - brokerkafka
+     - kafka-mysql
     ports:
       - 80:80
     networks:
       - db_network
       - drift_network
 
-  data_drift_frontend:
-    build: 
-      context: .
-      dockerfile: src/data_drift_frontend/Dockerfile
-    container_name: data_drift_frontend
-    depends_on:
-      - data_drift_backend
-    ports:
-      - 8501:8501
-    environment:
-      - API_URL=http://data_drift_backend:80
-    networks:
-      - drift_network
+  #data_drift_frontend:
+  #  build: 
+  #    context: .
+  #    dockerfile: src/data_drift_frontend/Dockerfile
+  #  container_name: data_drift_frontend
+  #  depends_on:
+  #    - data_drift_backend
+  #  ports:
+  #    - 8501:8501
+  #  environment:
+  #    - API_URL=http://data_drift_backend:80
+  #  networks:
+  #   - drift_network
 
   alert_frontend:
     build: 
@@ -123,4 +124,3 @@ networks:
 volumes:
   kafka-python-app-volume:
   kafka-python-app-volume-config:
-
