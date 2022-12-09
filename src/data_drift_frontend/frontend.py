@@ -10,9 +10,10 @@ if __name__ == '__main__':
 
     # Button to get the html report from the backend
     if st.button("Get data drift report"):
-        api = os.environ['API_URL']
-        r = requests.get(f"{api}/data_drift")
-        
+        #api = os.environ['API_URL']
+        api = "http://localhost:80"
+        # r = requests.get(f"{api}/data_drift")
+        r = requests.post(f"{api}/data_drift", data={"Download": True})
         # Display the html report
         components.html(r.text, height=1000)
         
