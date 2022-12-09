@@ -50,7 +50,8 @@ docker compose up
 
 ### C.4) Frontend
 ```
-http://localhost:8501
+Data Drift Frontend : http://localhost:8501
+Alert Frontend : http://localhost:8502
 ```
 
 
