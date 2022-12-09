@@ -1,6 +1,7 @@
 import mysql.connector
 from utils import Consumer
-import os 
+import os
+import time
 
 # data col : age,sex,cp,trtbps,chol,fbs,restecg,thalachh,exng,oldpeak,slp,caa,thall
 # data : 57,1,0,150,276,0,0,112,1,0.6,1,1,1
@@ -16,8 +17,7 @@ def init_db():
     mydb = mysql.connector.connect(
         host="kafka-mysql",
         user="root",
-        password="11111111",
-        port="3306"
+        password="11111111"
     )
     mycursor = mydb.cursor()
     mycursor.execute("CREATE DATABASE IF NOT EXISTS kafka")
@@ -38,6 +38,19 @@ if __name__ == "__main__":
     #server = '0.0.0.0:29092'
     server = os.environ['SERVERS_K']
     topic = 'Save'
+    is_connected = False
+    retry = 20
+    while not is_connected and retry > 0:
+        try:
+            mydb, mycursor = init_db()
+            is_connected = True
+        except:
+            print("Waiting for database...")
+            time.sleep(5)
+            retry -= 1
+    if not is_connected:
+        print("Database connection failed.")
+        exit(1)
     mydb, mycursor = init_db()
     create_table(mycursor)
     consumer = Consumer(server, topic).consumer
