@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Response
 import mysql.connector
-import joblib
 import pandas as pd
 import numpy as np
 from eurybia import SmartDrift
@@ -18,11 +17,6 @@ def connect_db():
     )
     mycursor = mydb.cursor()
     return mydb, mycursor
-
-def load_model(path):
-    model = joblib.load(path)
-    return model
-
 
 @app.get("/")
 def read_root():
@@ -60,29 +54,45 @@ def fill_db():
     return Response(status_code=200)
 
 
-@app.get("/data_drift")
-def data_drift():
+@app.post("/data_drift")
+def data_drift(data: dict):
+    download = data['Download']
+    print(download)
+
     mydb, mycursor = connect_db()
     sql_current = "SELECT * FROM Patient"
+    # check if Ref table exists
+    mycursor.execute("SHOW TABLES LIKE 'Ref'")
+    if mycursor.fetchone() is None:
+        df = pd.read_csv("train.csv")
+        df.drop("output", axis=1, inplace=True)
+        mycursor.execute("CREATE TABLE Ref (id INT AUTO_INCREMENT PRIMARY KEY, age INT, sex INT, cp INT, trtbps INT, chol INT, fbs INT, restecg INT, thalachh INT, exng INT, oldpeak FLOAT, slp INT, caa INT, thall INT)")
+        for i, row in df.iterrows():
+            sql = "INSERT INTO Ref (age, sex, cp, trtbps, chol, fbs, restecg, thalachh, exng, oldpeak, slp, caa, thall) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            mycursor.execute(sql, tuple(row))
+            mydb.commit()
+    
     sql_base = "SELECT * FROM Ref"
 
     df_base = pd.read_sql(sql_base, mydb)
     df_current = pd.read_sql(sql_current, mydb)
     df_current.drop(["id", "prediction"], axis=1, inplace=True)
     df_base.drop("id", axis=1, inplace=True)
-    # model = load_model("../svm_model.joblib")
 
     drift = SmartDrift(df_current= df_current, df_baseline= df_base)
-    
 
-    date = datetime.now().timestamp()
-    date = str(date).split('.')[0]
+    date = datetime.now()
+    date_timestamp = str(date.timestamp()).split('.')[0]
 
-    drift.compile(full_validation=True, date_compile_auc='01/01/2022', datadrift_file=f"../datadrift_auc_{date}.csv")
-    html_file = f"../drift_report_{date}.html"
+    drift.compile(full_validation=True, datadrift_file = "heartattack.csv")
 
-    drift.generate_report(html_file, title_story=f"Drift report on {date}")
-    with open(html_file, "r") as f:
-        html = f.read()
-    
-    return Response(content=html, media_type="text/html")
+    if download:
+        html_file = f"../drift_report_{date_timestamp}.html"
+        drift.generate_report(html_file, title_story=f"Drift report on {date.strftime('%d/%m/%Y')}")
+        with open(html_file, "r") as f:
+            html = f.read()
+        os.remove(html_file)
+        return Response(content=html, media_type="text/html", status_code=200)
+
+    auc = drift.auc
+    return {"auc": auc}
