@@ -47,27 +47,29 @@ if st.button("Get AUC"):
 
     # Send the request
     r = requests.post(f"{api}/data_drift", data=data)
+    if r.status_code != 200:
+        st.write("Error getting AUC")
+        st.write(r.text)
+    else:
+        # Get the response
+        response = json.loads(r.text)
 
-    # Get the response
-    response = json.loads(r.text)
-
-    # Add the AUC to the csv file
-    add_row_to_csv("auc.csv", [response['auc'], datetime.datetime.now()])
-    # Calculate the delta
-    with open("auc.csv", 'r') as f:
-        reader = csv.reader(f)
-        next(reader,None)
-        data = list(reader)
-        data = [float(x[0]) for x in data]
-        if (len(data) == 1):
-            d = 0
-        else:
-            d = data[-1] - data[-2]
-        
-    value = response['auc']
-    delta = d
-
-my_metric.metric(label="AUC", value=value, delta=delta)
+        # Add the AUC to the csv file
+        add_row_to_csv("auc.csv", [response['auc'], datetime.datetime.now()])
+        # Calculate the delta
+        with open("auc.csv", 'r') as f:
+            reader = csv.reader(f)
+            next(reader,None)
+            data = list(reader)
+            data = [float(x[0]) for x in data]
+            if (len(data) == 1):
+                d = 0
+            else:
+                d = data[-1] - data[-2]
+            
+        value = response['auc']
+        delta = d
+        my_metric.metric(label="AUC", value=value, delta=delta)
 
 if st.button("Get AUC Report"):
     #api = os.environ['API_URL']

@@ -18,6 +18,36 @@ def predict(data):
     pred = model.predict(datas)[0]
     return pred
 
+def check_data(data):
+    # check data type
+    if not (type(data['age']) is int or type(data['age']) is float):
+        return False
+    if not (type(data['sex']) is int or type(data['sex']) is float):
+        return False
+    if not (type(data['cp']) is int or type(data['cp']) is float):
+        return False
+    if not (type(data['trtbps']) is int or type(data['trtbps']) is float):
+        return False
+    if not (type(data['chol']) is int or type(data['chol']) is float):
+        return False
+    if not (type(data['fbs']) is int or type(data['fbs']) is float):
+        return False
+    if not (type(data['restecg']) is int or type(data['restecg']) is float):
+        return False
+    if not (type(data['thalachh']) is int or type(data['thalachh']) is float):
+        return False
+    if not (type(data['exng']) is int or type(data['exng']) is float):
+        return False
+    if not (type(data['oldpeak']) is int or type(data['oldpeak']) is float):
+        return False
+    if not (type(data['slp']) is int or type(data['slp']) is float):
+        return False
+    if not (type(data['caa']) is int or type(data['caa']) is float):
+        return False
+    if not (type(data['thall']) is int or type(data['thall']) is float):
+        return False
+    return True
+
 if __name__ == "__main__":
     #server = '0.0.0.0:29092'
     server = os.environ['SERVERS_K']
@@ -30,6 +60,9 @@ if __name__ == "__main__":
 
     for msg in consumer:
         value = msg.value
+        if not check_data(value):
+            print("Data is not valid")
+            continue
         pred = int(predict(value))
         pred_json = {"prediction": pred}
         save_data = {**value, **pred_json}

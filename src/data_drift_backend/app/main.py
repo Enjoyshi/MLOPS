@@ -76,7 +76,9 @@ def data_drift(data: dict):
 
     df_base = pd.read_sql(sql_base, mydb)
     df_current = pd.read_sql(sql_current, mydb)
-    df_current.drop(["id", "prediction"], axis=1, inplace=True)
+    if df_current.empty:
+        return Response(status_code=400)
+    df_current.drop(["id", "prediction", "timestamp"], axis=1, inplace=True)
     df_base.drop("id", axis=1, inplace=True)
 
     drift = SmartDrift(df_current= df_current, df_baseline= df_base)
