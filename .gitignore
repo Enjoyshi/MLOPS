@@ -133,3 +133,6 @@ dmypy.json
 
 # joblib file
 *.joblib
+
+#
+src/data_drift_frontend/
