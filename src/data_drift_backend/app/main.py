@@ -2,27 +2,18 @@ from fastapi import FastAPI, Response
 import mysql.connector
 import pandas as pd
 import numpy as np
-# from eurybia import SmartDrift
+from eurybia import SmartDrift
 from datetime import datetime
 import os
 
 app = FastAPI()
 
 def connect_db():
-    """
     mydb = mysql.connector.connect(
         host="kafka-mysql",
         user="root",
         password="11111111",
         database="kafka"
-    )
-    """
-    mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="11111111",
-        database="kafka",
-        port="3309"
     )
     mycursor = mydb.cursor()
     return mydb, mycursor
@@ -61,8 +52,6 @@ def fill_db():
         mydb.commit()
     print("Database filled")
     return Response(status_code=200)
-
-"""
 
 @app.post("/data_drift")
 def data_drift(data: dict):
@@ -108,7 +97,6 @@ def data_drift(data: dict):
 
     auc = drift.auc
     return {"auc": auc}
-"""
 
 @app.post("/get_data")
 def get_data(data: dict):

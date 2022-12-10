@@ -22,12 +22,17 @@ def add_row_to_csv(path, row, fieldnames=["auc", "timestamp"]):
             writer.writerow(row)
 
 
-
 st.title("Data Drift Monitor")
 
 st.write("This is a demo of the data drift monitor. The data is from the [Heart Disease UCI](https://www.kaggle.com/ronitf/heart-disease-uci) dataset. The model is a SVM model trained on the data. The data drift monitor is a simple implementation of the [Eurybia]")
 
 # Create a line chart to display the AUC
+# check if the csv file exists
+if not os.path.exists("auc.csv"):
+    # Create a new csv file if it doesn't exist
+    with open("auc.csv", 'w') as f:
+        writer = csv.writer(f)
+        writer.writerow(["auc", "timestamp"])
 df = pd.read_csv("auc.csv")
 df['timestamp'] = pd.to_datetime(df['timestamp'])
 df = df.set_index('timestamp')
@@ -39,11 +44,11 @@ delta = None
 my_metric.metric(label="AUC" , value=value, delta=delta)
 # Button to get the AUC
 if st.button("Get AUC"):
-    #api = os.environ['API_URL']
-    api = "http://localhost:8000"
+    api = os.environ['API_URL']
+    #api = "http://localhost:8000"
 
     # Json data to send to the API
-    data = json.dumps({"Download": False})
+    data = json.dumps({"Download": 0})
 
     # Send the request
     r = requests.post(f"{api}/data_drift", data=data)
@@ -75,8 +80,8 @@ start = st.date_input("Start Date", datetime.datetime.now())
 end = st.date_input("End Date", datetime.datetime.now())
 
 if st.button("Get CSV Data"):
-    #api = os.environ['API_URL']
-    api = "http://localhost:8000"
+    api = os.environ['API_URL']
+    # api = "http://localhost:8000"
 
     data = json.dumps({"start": start.strftime("%Y-%m-%d"), "end": end.strftime("%Y-%m-%d")})
     r = requests.post(f"{api}/get_data", data= data)
@@ -100,14 +105,19 @@ if st.button("Get CSV Data"):
     
 
 if st.button("Get AUC Report"):
-    #api = os.environ['API_URL']
-    api = "http://localhost:8000"
+    api = os.environ['API_URL']
+    #api = "http://localhost:8000"
 
-    data = json.dumps({"Download": True})
+    data = json.dumps({"Download": 1})
     r = requests.post(f"{api}/data_drift", data= data)
 
-    # Display the html report
-    components.html(r.text, height=800)
-    
+    if r.status_code != 200:
+        st.write("Error getting AUC Report")
+        st.write(r.text)
+    else:
+        # Display the html report
+        components.html(r.text, height=800)
 
-
+        # Download the html file
+        st.write("HTML file is ready to download, click the button below to download the file.")
+        my_download = st.download_button("Download Report", data=r.text.encode('utf-8'), file_name="report.html", mime="text/html")

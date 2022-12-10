@@ -82,19 +82,19 @@ services:
       - db_network
       - drift_network
 
-  #data_drift_frontend:
-  #  build: 
-  #    context: .
-  #    dockerfile: src/data_drift_frontend/Dockerfile
-  #  container_name: data_drift_frontend
-  #  depends_on:
-  #    - data_drift_backend
-  #  ports:
-  #    - 8501:8501
-  #  environment:
-  #    - API_URL=http://data_drift_backend:80
-  #  networks:
-  #   - drift_network
+  data_drift_frontend:
+    build: 
+      context: .
+      dockerfile: src/data_drift_frontend/Dockerfile
+    container_name: data_drift_frontend
+    depends_on:
+      - data_drift_backend
+    ports:
+      - 8501:8501
+    environment:
+      - API_URL=http://data_drift_backend:80
+    networks:
+     - drift_network
 
   alert_frontend:
     build: 

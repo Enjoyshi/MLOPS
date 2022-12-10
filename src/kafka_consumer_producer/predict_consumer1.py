@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from utils import Consumer, Producer
 import os
+from datetime import datetime
 
 # data col : age,sex,cp,trtbps,chol,fbs,restecg,thalachh,exng,oldpeak,slp,caa,thall
 
@@ -17,6 +18,35 @@ def predict(data):
     datas.drop(columns=["chol","trtbps","fbs",'restecg'])
     pred = model.predict(datas)[0]
     return pred
+
+def check_data_all_field(data):
+    if "age" not in data:
+        return False
+    if "sex" not in data:
+        return False
+    if "cp" not in data:
+        return False
+    if "trtbps" not in data:
+        return False
+    if "chol" not in data:
+        return False
+    if "fbs" not in data:
+        return False
+    if "restecg" not in data:
+        return False
+    if "thalachh" not in data:
+        return False
+    if "exng" not in data:
+        return False
+    if "oldpeak" not in data:
+        return False
+    if "slp" not in data:
+        return False
+    if "caa" not in data:
+        return False
+    if "thall" not in data:
+        return False
+    return True
 
 def check_data(data):
     # check data type
@@ -60,6 +90,9 @@ if __name__ == "__main__":
 
     for msg in consumer:
         value = msg.value
+        if not check_data_all_field(value):
+            print("Data is not valid")
+            continue
         if not check_data(value):
             print("Data is not valid")
             continue
@@ -69,6 +102,7 @@ if __name__ == "__main__":
         print(save_data)
         producer_save.send('Save', save_data)
         if pred == 1:
-            producer_alert.send('Alert', save_data)
+            alert_data = {**save_data, 'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+            producer_alert.send('Alert', alert_data)
             producer_alert.flush()
         producer_save.flush()

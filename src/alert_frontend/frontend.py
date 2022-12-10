@@ -4,44 +4,42 @@ import streamlit as st
 import os
 import pandas as pd
 import numpy as np
-# import Consumer from utils.py
-#sys.path.append(os.path.abspath(os.path.join('..')))
 
 from utils import Consumer
 
 def check_data(data):
     # check data type
-    if type(data['age']) != int or type(data['age']) != float:
+    if not (type(data['age']) is int or type(data['age']) is float):
         return False
-    if type(data['sex']) != int or type("sex") != float:
+    if not (type(data['sex']) is int or type(data['sex']) is float):
         return False
-    if type(data['cp']) != int or type(data['cp']) != float:
+    if not (type(data['cp']) is int or type(data['cp']) is float):
         return False
-    if type(data['trtbps']) != int or type(data['trtbps']) != float:
+    if not (type(data['trtbps']) is int or type(data['trtbps']) is float):
         return False
-    if type(data['chol']) != int or type(data['chol']) != float:
+    if not (type(data['chol']) is int or type(data['chol']) is float):
         return False
-    if type(data['fbs']) != int or type(data['fbs']) != float:
+    if not (type(data['fbs']) is int or type(data['fbs']) is float):
         return False
-    if type(data['restecg']) != int or type(data['restecg']) != float:
+    if not (type(data['restecg']) is int or type(data['restecg']) is float):
         return False
-    if type(data['thalachh']) != int or type(data['thalachh']) != float:
+    if not (type(data['thalachh']) is int or type(data['thalachh']) is float):
         return False
-    if type(data['exng']) != int or type(data['exng']) != float:
+    if not (type(data['exng']) is int or type(data['exng']) is float):
         return False
-    if type(data['oldpeak']) != int or type(data['oldpeak']) != float:
+    if not (type(data['oldpeak']) is int or type(data['oldpeak']) is float):
         return False
-    if type(data['slp']) != int or type(data['slp']) != float:
+    if not (type(data['slp']) is int or type(data['slp']) is float):
         return False
-    if type(data['caa']) != int or type(data['caa']) != float:
+    if not (type(data['caa']) is int or type(data['caa']) is float):
         return False
-    if type(data['thall']) != int or type(data['thall']) != float:
+    if not (type(data['thall']) is int or type(data['thall']) is float):
         return False
     return True
 
 if __name__ == '__main__':
+    
     server = os.environ['SERVERS_K']
-    #server = 'localhost:9092'
     topic = 'Alert'
     consumer = Consumer(server, topic).consumer
     st.title("Alert Monitor")
@@ -54,4 +52,6 @@ if __name__ == '__main__':
             print("Invalid data")
             continue
         df = df.append(value, ignore_index=True)
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df = df.sort_values(by=['timestamp'], ascending=False)
         my_table.table(df)
