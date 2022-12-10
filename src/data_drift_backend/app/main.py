@@ -2,18 +2,27 @@ from fastapi import FastAPI, Response
 import mysql.connector
 import pandas as pd
 import numpy as np
-from eurybia import SmartDrift
+# from eurybia import SmartDrift
 from datetime import datetime
 import os
 
 app = FastAPI()
 
 def connect_db():
+    """
     mydb = mysql.connector.connect(
         host="kafka-mysql",
         user="root",
         password="11111111",
         database="kafka"
+    )
+    """
+    mydb = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="11111111",
+        database="kafka",
+        port="3309"
     )
     mycursor = mydb.cursor()
     return mydb, mycursor
@@ -53,6 +62,7 @@ def fill_db():
     print("Database filled")
     return Response(status_code=200)
 
+"""
 
 @app.post("/data_drift")
 def data_drift(data: dict):
@@ -98,3 +108,25 @@ def data_drift(data: dict):
 
     auc = drift.auc
     return {"auc": auc}
+"""
+
+@app.post("/get_data")
+def get_data(data: dict):
+    start = data['start']
+    if 'end' not in data:
+        # today date to str format
+        end = datetime.now().strftime("%Y-%m-%d")
+    else:
+        end = data['end']
+    # Check if start and end are valid
+    if start > end:
+        return Response(status_code=400)
+    
+    mydb, mycursor = connect_db()
+    sql = "SELECT * FROM Patient WHERE timestamp BETWEEN %s AND %s"
+    mycursor.execute(sql, (start, end))
+    myresult = mycursor.fetchall()
+
+    # transform myresult to dict
+    myresult = [dict(zip(mycursor.column_names, row)) for row in myresult]
+    return {'result' : myresult}

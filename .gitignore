@@ -135,4 +135,4 @@ dmypy.json
 *.joblib
 
 #
-src/data_drift_frontend/
+src/data_drift_frontend/*.csv

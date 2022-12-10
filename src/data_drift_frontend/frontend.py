@@ -40,7 +40,7 @@ my_metric.metric(label="AUC" , value=value, delta=delta)
 # Button to get the AUC
 if st.button("Get AUC"):
     #api = os.environ['API_URL']
-    api = "http://localhost:80"
+    api = "http://localhost:8000"
 
     # Json data to send to the API
     data = json.dumps({"Download": False})
@@ -71,9 +71,37 @@ if st.button("Get AUC"):
         delta = d
         my_metric.metric(label="AUC", value=value, delta=delta)
 
+start = st.date_input("Start Date", datetime.datetime.now())
+end = st.date_input("End Date", datetime.datetime.now())
+
+if st.button("Get CSV Data"):
+    #api = os.environ['API_URL']
+    api = "http://localhost:8000"
+
+    data = json.dumps({"start": start.strftime("%Y-%m-%d"), "end": end.strftime("%Y-%m-%d")})
+    r = requests.post(f"{api}/get_data", data= data)
+    if r.status_code != 200:
+        st.write("Error getting AUC")
+        st.write(r.text)
+    else:
+        # Get the response
+        response = json.loads(r.text)
+        result = response['result']
+        df =  pd.DataFrame(columns=['age', 'sex', 'cp', 'trtbps', 'chol', 'fbs', 'restecg', 'thalachh', 'exng', 'oldpeak', 'slp', 'caa', 'thall', 'prediction', 'timestamp'])
+        for i in result:
+            df = df.append(i, ignore_index=True)
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        # Download the csv file
+        csv = df.to_csv(index=True).encode('utf-8')
+
+        # Download the csv file
+        st.write("CSV file is ready to download, click the button below to download the file.")
+        my_download = st.download_button("Download Data", data=csv, file_name="data.csv", mime="text/csv")
+    
+
 if st.button("Get AUC Report"):
     #api = os.environ['API_URL']
-    api = "http://localhost:80"
+    api = "http://localhost:8000"
 
     data = json.dumps({"Download": True})
     r = requests.post(f"{api}/data_drift", data= data)
