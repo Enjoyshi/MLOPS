@@ -4,6 +4,7 @@ import streamlit as st
 import os
 import pandas as pd
 import numpy as np
+from datetime import datetime
 
 from utils import Consumer
 
@@ -40,7 +41,7 @@ def check_data(data):
 if __name__ == '__main__':
     
     server = os.environ['SERVERS_K']
-    topic = 'Alert'
+    topic = os.environ['TOPIC_P']
     consumer = Consumer(server, topic).consumer
     st.title("Alert Monitor")
     st.write("Patient data that is predicted to have heart disease")
@@ -48,9 +49,12 @@ if __name__ == '__main__':
     my_table = st.empty()
     for msg in consumer:
         value = msg.value
+        if value["prediction"] == 0:
+            continue
         if not check_data(value):
             print("Invalid data")
             continue
+        value['timestamp'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         df = df.append(value, ignore_index=True)
         df['timestamp'] = pd.to_datetime(df['timestamp'])
         df = df.sort_values(by=['timestamp'], ascending=False)

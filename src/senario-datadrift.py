@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 server = 'localhost:9092'
-topic = 'ML'
+topic = 'MachineLearning'
 
 producer = Producer(server, topic).producer
 

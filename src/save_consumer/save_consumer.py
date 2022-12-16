@@ -8,13 +8,6 @@ import datetime
 # data : 57,1,0,150,276,0,0,112,1,0.6,1,1,1
 
 def init_db():
-    """
-    mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="11111111",
-        port="3309"
-    )"""
     mydb = mysql.connector.connect(
         host="kafka-mysql",
         user="root",
@@ -67,7 +60,7 @@ def check_data(data):
 if __name__ == "__main__":
     #server = '0.0.0.0:29092'
     server = os.environ['SERVERS_K']
-    topic = 'Save'
+    topic = os.environ['TOPIC_P']
     is_connected = False
     retry = 20
     while not is_connected and retry > 0:

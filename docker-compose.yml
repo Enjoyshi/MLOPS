@@ -38,6 +38,8 @@ services:
       - brokerkafka
     environment:
       - SERVERS_K=brokerkafka:29092
+      - TOPIC_ML=MachineLearning
+      - TOPIC_P=Prediction
     networks:
       - kafka_network
 
@@ -64,6 +66,7 @@ services:
       - kafka-mysql
     environment:
       - SERVERS_K=brokerkafka:29092
+      - TOPIC_P=Prediction
     networks:
       - kafka_network
       - db_network
@@ -107,6 +110,7 @@ services:
       - 8502:8502
     environment:
       - SERVERS_K=brokerkafka:29092
+      - TOPIC_P=Prediction
     networks:
       - kafka_network
     

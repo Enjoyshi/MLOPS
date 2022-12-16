@@ -81,15 +81,16 @@ def check_data(data):
 if __name__ == "__main__":
     #server = '0.0.0.0:29092'
     server = os.environ['SERVERS_K']
-    topic = 'ML'
+    recv_topic = os.environ['TOPIC_ML']
+    send_topic = os.environ['TOPIC_P']
     partition = 0
 
-    consumer = Consumer(server, topic).consumer
-    producer_save = Producer(server, 'Save').producer
-    producer_alert = Producer(server, 'Alert').producer
+    consumer = Consumer(server, recv_topic).consumer
+    producer_save = Producer(server, send_topic).producer
 
     for msg in consumer:
         value = msg.value
+        print(value)
         if not check_data_all_field(value):
             print("Data is not valid")
             continue
@@ -100,9 +101,5 @@ if __name__ == "__main__":
         pred_json = {"prediction": pred}
         save_data = {**value, **pred_json}
         print(save_data)
-        producer_save.send('Save', save_data)
-        if pred == 1:
-            alert_data = {**save_data, 'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-            producer_alert.send('Alert', alert_data)
-            producer_alert.flush()
+        producer_save.send(send_topic, save_data)
         producer_save.flush()
